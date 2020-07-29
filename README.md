@@ -1303,3 +1303,7 @@ Binary Images:
 2009‐01‐29    为开发人员说明如何符号化、了解和分析崩溃报告的新文档
 
 原文链接：https://developer.apple.com/library/ios/technotes/tn2151/_index.html
+
+# 开启僵尸指针 定位EXC_BAD_ACCESS异常
+## 点击 Xcode - Product -> Edit Scheme -> Arguments, 然后将点击”加号”, 
+## 将 NSZombieEnabled 参数加到 Environment Variables 窗口中, 后面的数值写上 ”YES”.
