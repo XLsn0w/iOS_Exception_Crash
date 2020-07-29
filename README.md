@@ -750,3 +750,556 @@ EOF
 
 
 ```
+
+
+```
+crash Log
+
+Incident Identifier: 926328CE-927A-4D1B-940C-B17A0CD1A5DB
+CrashReporter Key:   3af694acc56eb48927bd9022990ac1238a192d06
+Hardware Model:      iPad2,2
+Process:         LiBai [6180]
+Path:            /var/mobile/Applications/321E7CC8-5D97-4739-B388-1E49E6A7E2BD/LiBai.app/LiBai
+Identifier:      LiBai
+Version:         ??? (???)
+Code Type:       ARM (Native)
+Parent Process:  launchd [1]
+
+Date/Time:       2011-12-30 10:37:35.221 -0800
+OS Version:      iPhone OS 5.0.1 (9A405)
+Report Version:  104
+
+Exception Type:  EXC_BAD_ACCESS (SIGSEGV)
+Exception Codes: KERN_INVALID_ADDRESS at 0x00000000
+Crashed Thread:  0
+
+Thread 0 name:  Dispatch queue: com.apple.main-thread
+Thread 0 Crashed:
+0   libsystem_c.dylib                 0x32ed2c28 0x32e5d000 + 482344
+1   libsystem_c.dylib                 0x32ea9bac 0x32e5d000 + 314284
+2   libsystem_c.dylib                 0x32e73844 0x32e5d000 + 92228
+3   LiBai                             0x00119028 0x100000 + 102440
+4   LiBai                             0x00119f04 0x100000 + 106244
+5   LiBai                             0x0011bd02 0x100000 + 113922
+6   LiBai                             0x00117de6 0x100000 + 97766
+7   LiBai                             0x0011818a 0x100000 + 98698
+8   CoreFoundation                    0x34229224 0x34211000 + 98852
+9   LiBai                             0x00118c82 0x100000 + 101506
+10  Foundation                        0x32d51c32 0x32c8b000 + 814130
+11  Foundation                        0x32ca96e2 0x32c8b000 + 124642
+12  Foundation                        0x32ca96ac 0x32c8b000 + 124588
+13  Foundation                        0x32ca95ce 0x32c8b000 + 124366
+14  CFNetwork                         0x3795989e 0x3794a000 + 63646
+15  CFNetwork                         0x3794e53e 0x3794a000 + 17726
+16  CFNetwork                         0x3794e23c 0x3794a000 + 16956
+17  CFNetwork                         0x3794e172 0x3794a000 + 16754
+18  CoreFoundation                    0x3429eafc 0x34211000 + 580348
+19  CoreFoundation                    0x3429e2c8 0x34211000 + 578248
+20  CoreFoundation                    0x3429d06e 0x34211000 + 573550
+21  CoreFoundation                    0x342204d6 0x34211000 + 62678
+22  CoreFoundation                    0x3422039e 0x34211000 + 62366
+23  GraphicsServices                  0x30b0bfc6 0x30b08000 + 16326
+24  UIKit                             0x327e873c 0x327b7000 + 202556
+25  LiBai                             0x00101820 0x100000 + 6176
+26  LiBai                             0x001017d8 0x100000 + 6104
+
+从这里只能初步判断是因为访问了空的内存。但是具体的就不知道了。因为下面的进程调用都是堆栈信息，在网上找了很久终于找到了解决的办法。
+
+
+
+分析crash报告：
+
+1、首先我们需要一个XXXXX.app.dSYM  这个在 Archive 中的 release 版本的 应用程序.xcarchive可以找到，只要在对应的文件上面 右键 显示包内荣，可以看到有一个 dSYMs的文件夹，里面就有我们要的  XXXXX.app.dSYM 文件。
+
+2、下面我们需要 找到  symbolicatecrash
+
+/Developer/Platforms/iPhoneOS.platform/Developer/Library/PrivateFrameworks/DTDeviceKit.framework/Versions/A/Resources/symbolicatecrash)
+
+    3、用终端进入 这个目录 然后 用   symbolicatecrash  crash 文件   dSYM 文件 > 输出的文件 这样的命令就可以导出。
+
+Incident Identifier: 9B4E1CA2-CEB5-4777-BD93-FFFD3AC10E0F
+CrashReporter Key:   3af694acc56eb48927bd9022990ac1238a192d06
+Hardware Model:      iPad2,2
+Process:         LiBai [6166]
+Path:            /var/mobile/Applications/321E7CC8-5D97-4739-B388-1E49E6A7E2BD/LiBai.app/LiBai
+Identifier:      LiBai
+Version:         ??? (???)
+Code Type:       ARM (Native)
+Parent Process:  launchd [1]
+
+Date/Time:       2011-12-30 10:36:22.049 -0800
+OS Version:      iPhone OS 5.0.1 (9A405)
+Report Version:  104
+
+Exception Type:  EXC_BAD_ACCESS (SIGSEGV)
+Exception Codes: KERN_INVALID_ADDRESS at 0x00000000
+Crashed Thread:  0
+
+Thread 0 name:  Dispatch queue: com.apple.main-thread
+Thread 0 Crashed:
+0   libsystem_c.dylib                 0x32ed2c28 0x32e5d000 + 482344
+1   libsystem_c.dylib                 0x32ea9bac 0x32e5d000 + 314284
+2   libsystem_c.dylib                 0x32e73844 0x32e5d000 + 92228
+3   LiBai                             0x000a6028 fread_file_func (ioapi.c:97)
+4   LiBai                             0x000a6f04 unzReadCurrentFile (unzip.c:1279)
+5   LiBai                             0x000a8d02 -[ZipArchive UnzipFileTo:overWrite:] (ZipArchive.mm:238)
+6   LiBai                             0x000a4de6 -[booklistViewController OnUnZip] (booklistViewController.m:68)
+7   LiBai                             0x000a518a -[booklistViewController downloadManagerDataDownloadFinished:] (booklistViewController.m:146)
+8   CoreFoundation                    0x34229224 0x34211000 + 98852
+9   LiBai                             0x000a5c82 -[DownloadManager connectionDidFinishLoading:] (DownloadManager.m:138)
+10  Foundation                        0x32d51c32 0x32c8b000 + 814130
+11  Foundation                        0x32ca96e2 0x32c8b000 + 124642
+12  Foundation                        0x32ca96ac 0x32c8b000 + 124588
+13  Foundation                        0x32ca95ce 0x32c8b000 + 124366
+14  CFNetwork                         0x3795989e 0x3794a000 + 63646
+15  CFNetwork                         0x3794e53e 0x3794a000 + 17726
+16  CFNetwork                         0x3794e23c 0x3794a000 + 16956
+17  CFNetwork                         0x3794e172 0x3794a000 + 16754
+18  CoreFoundation                    0x3429eafc 0x34211000 + 580348
+19  CoreFoundation                    0x3429e2c8 0x34211000 + 578248
+20  CoreFoundation                    0x3429d06e 0x34211000 + 573550
+21  CoreFoundation                    0x342204d6 0x34211000 + 62678
+22  CoreFoundation                    0x3422039e 0x34211000 + 62366
+23  GraphicsServices                  0x30b0bfc6 0x30b08000 + 16326
+24  UIKit                             0x327e873c 0x327b7000 + 202556
+25  LiBai                             0x0008e820 main (main.m:14)
+26  LiBai                             0x0008e7d8 0x8d000 + 6104
+
+```
+
+## iOS 程序开发时经常用遇到 EXC_BAD_ACCESS 错误导致 Crash，出现这种错误时一般 Xcode 不会给我们太多的信息来定位错误来源
+
+当一个应用发生崩溃时会产生一份崩溃报告（Crash Report），该报告可以帮助我们了解崩溃的产生原因。该文档讲述了关于怎么样符号化、理解和分析崩溃报告的相关内容。
+
+
+介绍
+当iOS设备上的应用崩溃时，设备上会为其生成和保存一份崩溃报告。崩溃报告描述了应用程序在什么情况下结束运行的。在大多数情况下报告会为每个执行的线程包含一个完整的回溯（Backtrace），这对于调试应用崩溃问题时非常有用。如果你是iOS开发者，你应该查看这些崩溃报告来了解你的应用存在哪些崩溃，并且应该对这些崩溃进行修复。
+
+崩溃报告中带有的回溯必须要先进行符号化（Symbolicated）才可以进行分析。符号化（Symbolication）指的是使用人能够读懂的方法名称和行号来替换回溯里面的内存地址信息。如果你通过XCode的Devices窗口获得一台设备的崩溃日志，那么它会在几秒钟内自动地将日志进行符号化。否则你需要手动将.crash文件导入到XCode的Devices窗口中进行符号化。可以参考符号化（Symbolication）章节来了解详细的内容
+
+低内存报告与其它崩溃报告不同的地方在于它没有回溯信息。当一个低内存崩溃发生时，你必须检查你的内存使用图表（在Debug面板的Memory中查看）并且对低内存警告做出应对处理（如UIViewController中的didReceiveMemoryWarning）。本篇文档会提供给你一些内存管理方面的参考资料，你应该能够在里面学习到一些有用的信息。
+
+获取崩溃和低内存报告
+《调试部署iOS应用》一文中讲述了怎样直接从一台iOS设备中查找崩溃和低内存报告。
+
+《应用分发向导－分析崩溃报告》一文中讲述了怎么查看从TestFlight的beta测试用户和从AppStore下载你的App的用户那里所收集到的崩溃日志信息。
+
+分析崩溃报告
+本章节主要讨论一份标准的崩溃报告中出现的每个小节。
+
+头部信息（Header）
+每份崩溃报告的开头都带有一个头部信息。
+
+Incident Identifier: E6EBC860-0222-4B82-BF7A-2B1C26BE1E85 
+
+CrashReporter Key: 6196484647b3431a9bc2833c19422539549f3dbe 
+
+Hardware Model: iPhone6,1
+
+Process: TheElements [4637]
+
+Path: /private/var/mobile/Containers/Bundle/Application/5A9E4FC2-D03B-4E19-9A91- 104A0D0C1D44/TheElements.app/TheElements
+
+Identifier: com.example.apple-samplecode.TheElements 
+
+Version: 1.12
+
+Code Type: ARM (Native)
+
+Parent Process: launchd [1]
+
+
+Date/Time: 2015-04-06 09:14:08.775 -0700 
+
+Launch Time: 2015-04-06 09:14:08.597 -0700
+
+OS Version: iOS 8.1.3 (12B466)
+
+Report Version: 105
+清单1.从某份崩溃报告中摘录下来的头部信息
+
+大多数字段的意思都很容易理解，有少数字段需要特殊说明一下：
+
+Incident Identifier：报告的唯一标识。不同的报告该值不相同。
+CrashReporter Key：每台设备的匿名标识（并非真正的设备标识）。如果不同的报告出自同一设备，则该值相同。
+Process：崩溃进程的名称。该值对应应用信息属性列表（Info.plist）中的CFBundleExecutable所指定的值。
+Version：崩溃进程的版本号。该值对应应用信息属性列表（Info.plist）中的CFBundleVersion和CFBundleVersionString拼接起来的值。
+Code Type：崩溃进程的目标体系结构。该值是ARM-64或ARM中的一个。
+OS Version：发生崩溃的操作系统版本号（包括构建版本号）。
+异常代码（Exception Codes）
+这里不要和Objective-C/C++的异常混淆了（虽然两者都有可能是崩溃的原因）。本章节列出了Mach的异常类型、子异常类型、处理器专用异常代码和其它的一些字段来为崩溃的根本原因提供更多的信息。最后一个字段列出了触发崩溃的线程的索引。并不是所有字段都会在每份崩溃报告中出现。
+
+Exception Type: EXC_CRASH (SIGABRT)
+
+Exception Codes: 0x0000000000000000, 0x0000000000000000
+
+Triggered by Thread: 0
+清单2.从某份崩溃报告中摘录的异常代码
+
+下面的章节将对一些公共的异常类型进行说明。
+
+坏的内存访问 [EXC_BAD_ACCESS // SIGSEGV // SIGBUS]
+
+进程试图访问无效的内存地址. 子异常类型字段包含一个kern_return_t的错误描述. 子异常代码(该值跟在子异常类型的后面) 列出被访问的坏内存地址。
+
+如果objc_msgSend或者objc_release出现接近崩溃线程的回溯顶部, 进程可能试图向已经释放的对象发送消息. 你应该通过Instrument工具的Zombies来分析你的应用，以便更好地了解触发该崩溃的条件。
+
+不正常退出[EXC_CRASH // SIGABRT]
+
+进程不正常退出. 导致该异常的大多数情况是因为没有捕获Objective - C/C++所产生的异常。
+
+如果应用扩展（App Extensions）在初始化时花费太多时间将会被结束掉(watchdog结束，watchdog结束指的是watchdog超时后强行终止应用)。如果扩展在启动时由于挂起而被杀掉进程，那么崩溃报告的子异常类型将会是LAUNCH_HANG。因为扩展没有主函数，因此初始化花费的时间都体现在扩展和依赖库的静态构造函数和+load方法中。你应该尽可能地避免在静态构造函数和+load方法中处理过多的工作（也就是文档中说的延迟大部分的工作处理）。
+
+跟踪陷阱 [EXC_BREAKPOINT // SIGTRAP]
+
+跟非正常退出相似。该异常是由于打算给一个附加的调试器在执行特定的断点来中断进程时触发。你可以在自己的代码中使用__builtin_trap()方法来触发此异常。如果没有被调试器所附加，那么进程将会结束并且生成一份崩溃报告。
+
+如果Swift代码在运行时发现一个意外的情况时，也会以该异常类型结束程序。例如：
+
+为一个非可选（non-optional）类型被赋值nil
+一个有问题的强制类型转换
+通过看崩溃线程的回溯来确定是在什么位置出现异常的情况。
+
+守护资源的侵害 [EXC_GUARD]
+
+进程侵害了一个被守护的资源。系统库可能会标记守护某些文件描述符，在此之后如果对这些文件描述符作正常的操作将触发EXC_GUARD异常（当系统想操作这些文件描述符时，会使用特殊的'guarded'私有API）。该异常类型可以帮助你快速地跟踪例如关闭一个由系统库打开的文件描述符这类的问题。举个例子，如果应用关闭了一个基于SQLite存储的Core Data的SQLite文件描述符，那么Core Data随后也会离奇地崩溃。守护异常越早发现越容易调试。
+
+相关的子异常类型是一个位字段（bitfield），分解如下：
+
+[63:61] ‐ 守护类型: 守护资源的类型. 0x2表示一个文件描述符。
+[60:32] ‐ 特点（Flavor）: 违规行为被触发的条件。
+如果第一位（1 << 0）被设置，则表示进程试图在被守护的文件描述符上调用close()
+如果第二位（1 << 1）被设置，则表示进程试图在一个被守护的文件描述符上调用dup()、dup2() 、带有F_DUPFD或者F_DUPFD_CLOEXEC命令的fcntl()方法。
+如果第三位（1 << 2）被设置，则表示进程试图通过套接字（Socket）来发送一个被守护的文件描述符。
+如果第五位（1 << 4）被设置，则表示进程试图对一个被守护的文件描述进行写操作。
+[31:0] ‐文件描述符：进程试图修改的被守护的文件描述符。
+资源限制 [EXC_RESOURCE]
+
+进程触及了消耗资源的限额。这不是一个崩溃，但系统会派发通知告诉进程使用了过多的资源。在子异常类型中会描述确切的资源信息：
+
+子异常类型WAKEUPS表示一个线程每秒中唤醒的次数太多，这迫使CPU唤醒太频繁并且会损耗电池的寿命。
+
+子异常类型MEMORY表示进程已经越过了系统强制的内存限制。这可能是过多占用内存而导致崩溃的前兆。
+
+其它异常类型
+
+一些崩溃报告可能包含一个未命名的异常类型，是一个十六进制数（如：00000020）。如果你收到这样的崩溃报告，直接查看下面更多的异常代码信息：
+
+0xbaaaaaad表示日志是整个系统的一个堆栈快照（stackshot）而不是一个崩溃报告。通过按下Home键和任意音量键可以获得堆栈快照（stackshot）。通常这些日志是被用户意外创建的（不小心同时按下了Home键＋音量键），而不是一个错误。
+
+0xbad22222表示一个VoIP应用由于恢复过于频繁而被iOS结束进程。
+
+0x8badf00d表示一个应用由于watchdog发生超时而被iOS结束进程。这表明该应用程序在启动、结束或者响应系统事件时花费太长时间。一个常见的例子是在主线程上实现同步的网络操作。任何在Thread 0（主线程）上的操作都应该放到后台线程上执行，或者使用不阻塞主线程的方式进行处理。
+
+0xc00010ff表示一个应用由于响应一个热事件（thermal event）而被操作系统杀掉进程。这可能是由于在特定的设备上发生崩溃，或者是操作环境的问题。为了让你的程序获得更多有效的提示，请观看《使用Instruments来提升iOS性能和电量优化的WWDC会议》。
+
+0xdead10cc表示一个应用由于在后台运行时还保留着系统的资源（如通讯录数据库）而被iOS结束进程。
+
+0xdeadfa11表示应用程序被用户强制退出。当用户先按住开机键直到出现“滑动来关机”界面后再按住Home一段时间后就会出现强制退出的情况。这可能由于应用程序无法响应才使用这种方法来进行强制退出，但是不能保证可以退出所有应用程序。
+
+注意：从多任务列表中直接结束一个挂起的应用是不会产生崩溃报告的。一旦应用挂起，则iOS可以在任何时候将其结束，而不产生崩溃报告。
+
+应用具体信息（Application Specific Information）
+某些崩溃会写入一些额外的信息到崩溃报告中。不同的结束类型对应该部分的内容也不相同。你可以通过阅读本章内容来更好地了解一下应用程序结束的情形。
+
+Application Specific Information:
+
+MyApp[134] was suspended with locked system files: 
+
+/private/var/mobile/Library/AddressBook/AddressBook.sqlitedb
+清单3.从某份崩溃报告中摘录的应用具体信息
+
+回溯（Backtrace）
+奔溃报告中最有趣的部分就是每个进程当时已经中止执行的线程回溯。这些回溯的内容就和你使用调试器停止执行应用的时候看到的内容类似。
+
+Thread 0 name: Dispatch queue: com.apple.main-thread 
+
+Thread 0 Crashed:
+
+0 TheElements 0x0000000100063fdc -[AtomicElementViewController myTransitionDidStop:finished:context:] (AtomicElementViewController.m:201)
+
+1 UIKit 0x000000018ca5c2ec -[UIViewAnimationState sendDelegateAnimationDidStop:finished:] + 184
+
+2 UIKit 0x000000018ca5c1f4 -[UIViewAnimationState animationDidStop:finished:] + 100
+
+3 QuartzCore 0x000000018c380f60 CA::Layer::run_animation_callbacks(void*) + 292
+
+4 libdispatch.dylib 0x0000000198fb9368 _dispatch_client_callout + 12
+
+5 libdispatch.dylib 0x0000000198fbd97c_dispatch_main_queue_callback_4CF + 928
+
+6 CoreFoundation 0x000000018822dfa0 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__ + 8
+
+7 CoreFoundation 0x000000018822c048 __CFRunLoopRun + 1488
+
+8 CoreFoundation 0x00000001881590a0 CFRunLoopRunSpecific + 392
+
+9 GraphicsServices 0x00000001912fb5a0 GSEventRunModal + 164
+
+10 UIKit 0x000000018ca8aaa0 UIApplicationMain + 1484
+
+11 TheElements 0x000000010005d800 main (main.m:55)
+
+12 libdyld.dylib 0x0000000198fe2a04 start + 0
+
+Thread 1 name: Dispatch queue: com.apple.libdispatch-manager
+
+Thread 1:
+
+0 libsystem_kernel.dylib 0x00000001990e0c94 kevent64 + 8
+
+1 libdispatch.dylib 0x0000000198fc897c_dispatch_mgr_invoke + 272
+
+2 libdispatch.dylib 0x0000000198fbb3b0_dispatch_mgr_thread + 48
+
+...
+清单4. 从某份已完成符号化的崩溃报告中摘录的回溯内容
+
+符号化（Symbolication）
+
+从iOS设备中检索到的崩溃日志只有可执行代码在加载的二进制映像（Binary Images）中的十六进制地址，是没有包含方法或函数名称的，而这些方法和函数的名称被称为符号，如清单5所示，你需要将这些地址与符号进行映射。
+
+将回溯的地址解析为源码的方法和行号被称为符号化 ，这过程需要上传到AppStore的应用的二进制文件和编译二进制文件时生成的.dSYM文件。二进制文件和.dSYM文件是一一对应的，否则崩溃报告可能只会显示部分内容被符号化，如清单6所示。因此，保留每个分发给用户的应用包（不管如何分发）和对应的.dSYM文件就非常有必要了。
+
+Thread 0 name: Dispatch queue: com.apple.main-thread
+
+Thread 0 Crashed:
+
+0 TheElements 0x00000001000effdc0x1000e4000+49116
+
+1 UIKit 0x000000018ca5c2ec 0x18ca14000 + 295660
+
+2 UIKit 0x000000018ca5c1f4 0x18ca14000 + 295412
+
+3 QuartzCore 0x000000018c380f600x18c36c000 + 85856
+
+4 libdispatch.dylib 0x0000000198fb93680x198fb8000 + 4968
+
+5 libdispatch.dylib 0x0000000198fbd97c0x198fb8000 + 22908
+
+6 CoreFoundation 0x000000018822dfa0 0x188150000 + 909216
+
+7 CoreFoundation 0x000000018822c048 0x188150000 + 901192
+
+8 CoreFoundation 0x00000001881590a00x188150000 + 37024
+
+9 GraphicsServices 0x00000001912fb5a00x1912f0000 + 46496
+
+10 UIKit 0x000000018ca8aaa0 0x18ca14000 + 486048
+
+11 TheElements 0x00000001000e98000x1000e4000 + 22528
+
+12 libdyld.dylib 0x0000000198fe2a040x198fe0000 + 10756
+清单5.从某份未符号化的崩溃报告中摘录的回溯部分
+
+Thread 0 name: Dispatch queue: com.apple.main-thread
+
+Thread 0 Crashed:
+
+0 TheElements 0x00000001000effdc0x1000e4000 + 49116
+
+1 UIKit 0x000000018ca5c2ec -[UIViewAnimationState sendDelegateAnimationDidStop:finished:] + 184
+
+2 UIKit 0x000000018ca5c1f4 -[UIViewAnimationState animationDidStop:finished:] + 100
+
+3 QuartzCore 0x000000018c380f60 CA::Layer::run_animation_callbacks(void*) + 292
+
+4 libdispatch.dylib 0x0000000198fb9368_dispatch_client_callout + 12
+
+5 libdispatch.dylib 0x0000000198fbd97c_dispatch_main_queue_callback_4CF + 928
+
+6 CoreFoundation 0x000000018822dfa0 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__ + 8
+
+7 CoreFoundation 0x000000018822c048__CFRunLoopRun + 1488
+
+8 CoreFoundation 0x00000001881590a0CFRunLoopRunSpecific + 392
+
+9 GraphicsServices 0x00000001912fb5a0GSEventRunModal + 164
+
+10 UIKit 0x000000018ca8aaa0UIApplicationMain + 1484
+
+11 TheElements 0x00000001000e98000x1000e4000 + 22528
+
+12 libdyld.dylib 0x0000000198fe2a04start + 0
+清单6.从某份部分符号化崩溃报告中摘录的回溯部分（系统的栈帧已符号化，但没有符号化应用程序栈帧）
+
+要点：你必须保留应用程序二进制和它对应的.dSYM文件才能够完整地进行符号化。你每次提交这些编译文件到iTunes Connect的时候必须要将它们归档。.dSYM文件和应用程序的二进制文件在每次编译中是对应捆绑的。即使是往后使用的是相同的源文件进行编译，那产生的.dSYM文件和应用程序的二进制文件也是跟之前的没有任何关系的。如果你使用XCode的Build和Archive命令进行编译，那么.dSYM 文件和二进制文件将会自动放到一个合适的路径。不然也可以是一个通过Spotlight可搜索到的位置（如你的Home目录）。
+
+使用XCode的Archive命令可以很容易地使二进制文件和.dSYM文件配对。当你使用Archive命令（通过选择Product菜单中的Archive）时，XCode会一起生成应用的二进制文件和包含符号信息的.dSYM文件并将它们保存到你的Home目录下。你可以通过XCode的Organizer在Archived栏目下找到所有你归档过的应用。当符号化崩溃报告时，XCode会自动从这里查找对应的归档应用；并且可以通过这里直接提交归档应用到iTunes Connect来确保你release的应用程序二进制文件和.dSYM文件相匹配。
+
+XCode会自动符号化所有能够匹配程序二进制文件和.dSYM文件的崩溃报告。因此，你需要将所有要符号化的崩溃报告添加到XCode的Organizer中。其步骤如下：
+
+将iOS设备连接到你的Mac中。
+选择XCode的Window菜单中的Devices。
+在左侧的DEVICES栏目下选择连接的设备。
+在右侧的Device Information栏目下点击“View Device Logs”按钮。
+将你的崩溃报告拖拽到弹出面板的左侧。
+XCode会自动符号化崩溃报告并显示符号化后的结果。
+异常（Exceptions）
+
+异常在Objective-C中用来说明编程中或者运行时意外发生的错误。例如：在集合中的超出范围访问、试图改变一个不可变的对象、没有实现协议中必须实现的方法或者给对象发送一个不存在的消息等。
+
+注意：给一个已经释放的对象发送消息会抛出NSInvalidArgumentException异常而不是立即崩溃；当一个新对象分配的内存刚好在已释放对象的内存地址上时会发生这样的情况。如果你的应用崩溃是由于未捕获的NSInvalidArgumentException异常（在异常的回溯中看到有-[NSObject(NSObject) doesNotRecognizeSelector:]这样的信息），可以考虑使用Instrument的Zombies分析你的应用程序来尽可能排出一些不合理的内存管理情况。
+
+如果一个异常未被捕获，那么它会被一个叫未捕获异常处理器（uncaught exception handler）的方法所拦截。iOS默认的未捕获异常处理器会将异常信息和回溯打印到设备的控制台后结束掉程序。只有最后一个未捕获异常会写入到崩溃报告的Last Exception Backtrace小节下，如清单7所示。崩溃报告中省略了异常消息。如果你收到一份带有Last Exception Backtrace小节的崩溃报告，你应该从原来的设备获得控制台日志来更好地了解导致抛出这次异常的情况。
+
+Last Exception Backtrace:
+
+(0x18632c2d8 0x197af80e4 0x18632bf5c 0x187165480 0x186257520 0x18b18c7a0 0x18b088384
+0x18ad6ca28 0x18ad6c994 0x18af0f25c 0x18ae21ef0 0x18ae21cbc 0x18ae21c3c 0x18ad69760
+0x18a6b1e1c 0x18a6ac884 0x18a6ac728 0x18a6abebc 0x18a6abc3c 0x18a6a5364 0x1862e42a4
+0x1862e1230 0x1862e1610 0x18620d2d4 0x18fa2b6fc 0x18add2fac 0x1000fd2f4 0x198176a08)
+条目7.从某份未符号化的异常报告中摘录的Last Exception Backtrace小节
+
+带有Last Exception Backtrace的崩溃日志仅包含了16进制的地址信息，必须对其进行符号化处理，使它变成可被理解的回溯。如条目8所示：
+
+Last Exception Backtrace:
+
+0   CoreFoundation 0x18632c2d8 __exceptionPreprocess + 132
+
+1   libobjc.A.dylib 0x197af80e4 objc_exception_throw + 60
+
+2   CoreFoundation 0x18632bf5c -[NSException raise] + 12
+
+3   Foundation 0x187165480 -[NSObject(NSKeyValueCoding) setValue:forKey:] + 248
+
+4   CoreFoundation 0x186257520 -[NSArray makeObjectsPerformSelector:] + 248
+
+5   UIKit 0x18b18c7a0 -[UINib instantiateWithOwner:options:] + 1604
+
+6   UIKit 0x18b088384 -[UIViewController _loadViewFromNibNamed:bundle:] + 284
+
+7   UIKit 0x18ad6ca28 -[UIViewController loadViewIfRequired] + 88
+
+8   UIKit 0x18ad6c994 -[UIViewController view] + 32
+
+9   UIKit 0x18af0f25c -[UINavigationController _startCustomTransition:] + 712
+
+10  UIKit 0x18ae21ef0 -[UINavigationController _startDeferredTransitionIfNeeded:] + 468
+
+11  UIKit 0x18ae21cbc -[UINavigationController __viewWillLayoutSubviews] + 56
+
+12  UIKit 0x18ae21c3c -[UILayoutContainerView layoutSubviews] + 200
+
+13  UIKit 0x18ad69760 -[UIView(CALayerDelegate) layoutSublayersOfLayer:] + 580
+
+14  QuartzCore 0x18a6b1e1c -[CALayer layoutSublayers] + 152
+
+15  QuartzCore 0x18a6ac884 CA::Layer::layout_if_needed(CA::Transaction*) + 320
+
+16  QuartzCore 0x18a6ac728 CA::Layer::layout_and_display_if_needed(CA::Transaction*) + 32
+
+17  QuartzCore 0x18a6abebc CA::Context::commit_transaction(CA::Transaction*) + 276
+
+18  QuartzCore 0x18a6abc3c CA::Transaction::commit() + 528
+
+19  QuartzCore 0x18a6a5364 CA::Transaction::observer_callback(__CFRunLoopObserver*, unsigned long, void*) + 80
+
+20  CoreFoundation 0x1862e42a4 __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__ + 32
+
+21  CoreFoundation 0x1862e1230 __CFRunLoopDoObservers + 360
+
+22  CoreFoundation 0x1862e1610 __CFRunLoopRun + 836
+
+23  CoreFoundation 0x18620d2d4 CFRunLoopRunSpecific + 396
+
+24  GraphicsServices 0x18fa2b6fc GSEventRunModal + 168
+
+25  UIKit 0x18add2fac UIApplicationMain + 1488
+
+26  TheElements 0x1000fd2f4 main (main.m:55)
+
+27  libdyld.dylib 0x198176a08 start + 4
+清单8.从某份已符号化的崩溃报告中摘录的Last Exception Backtrace小节.这是一个在应用的故事板中加载一个场景时抛出的异常。因为一个与IBOutlet相关联的场景元素缺失导致。
+
+注意：如果发现你的应用程序所指定的异常处理域中的异常在抛出时没有被捕获，请检查你的应用或者库在编译时是否指定了-no_compact_unwind标识，如果指定了请去掉。
+
+64位的iOS使用了一个“零成本（zero-cost）”的异常实现。在一个“零成本”系统中，每个可能抛出异常的方法都有描述怎么unwind堆栈的附加信息。如果一个异常在不具有unwind数据的栈帧中抛出，那么异常处理将无法继续并且进程被停止执行。这有可能是一个更上层堆栈异常处理，但是如果有一帧没有unwind数据那么将没有方法知道异常从哪一个栈帧抛出。指定-no_compact_unwind标识意味着你的方法没有unwind table的代码，所以你不能从这些方法中抛出异常。
+
+此外，如果你的应用程序或库包含纯C代码，你可能需要指定-funwind-tables标识来让你的代码中的所有方法包含unwind table。
+
+线程状态（Thread State）
+该小节列出了崩溃线程的ARM状态。这是一份在崩溃时寄存器及其值的列表。当你看一份崩溃报告的时候了解线程状态不是必须的，但你可以利用这些信息来更好的了解当时崩溃的情况。
+
+Thread 0 crashed with ARM Thread State (64-bit):
+
+x0: 0x0000000000000000   x1: 0x0000000000000000   x2: 0x0000000000000000   x3: 0x00000001995f8020
+
+x4: 0x0000000000000000   x5: 0x0000000000000001   x6: 0x0000000000000000   x7: 0x0000000000000000
+
+x8: 0x0000000000000000   x9: 0x0000000000000015  x10: 0x0000000199601df0  x11: 0x0000000b0000000f
+
+x12: 0x00000001741e8700  x13: 0x000001a5995f5779  x14: 0x0000000000000000  x15: 0x0000000044000000
+
+x16: 0x00000001989724d8  x17: 0x0000000188176370  x18: 0x0000000000000000  x19: 0x00000001701dda60
+
+x20: 0x0000000000000001  x21: 0x0000000136606e20  x22: 0x00000001000f6238  x23: 0x0000000000000000
+
+x24: 0x000000019cc640a8  x25: 0x0000000000000020  x26: 0x0000000000000000  x27: 0x0000000000000000
+
+x28: 0x000000019cc577c0  fp: 0x000000016fd1a8d0   lr: 0x00000001000effcc
+
+sp: 0x000000016fd1a860   pc: 0x00000001000effdc cpsr: 0x60000000
+清单9.从某份崩溃报告中摘录的线程状态小节
+
+二进制映像（Binary Images）
+该小节列出了崩溃时加载到进程中的二进制映像。
+
+Binary Images:
+
+0x100058000 - 0x10006bfff TheElements arm64 <77b672e2b9f53b0f95adbc4f68cb80d6>
+/var/mobile/Containers/Bundle/Application/CB86658C-F349-4C7A-B73B-CE3B4502D5A4/TheElements.app/TheElements
+
+...
+清单10.从某份崩溃报告中摘录的二进制映像小节中的程序入口
+
+每行列出一个二进制映像的以下细节：
+
+二进制映像在进程中的地址空间。
+二进制映像的可执行程序名称。
+二进制映像的体系结构。一个可执行文件可以包含多个不同体系结构的“切片”，但仅有一个“切片”将会加载到进程中。
+二进制映像的唯一标识UUID。每个版本的应用程序/框架和与其对应的符号化.dSYM文件影响此标识的变化。
+可执行文件在磁盘上的路径。
+了解低内存报告
+当发现低内存情况时，iOS中的虚拟内存系统会依靠协作的应用程序去释放内存。低内存警告会通知所有运行中的程序和进程来请求释放内存，希望减少内存的使用量。如果内存压力得不到释放，系统可能会终止后台的进程来缓解内存压力。如果有足够的内存被释放，那么你的程序可以继续运行，否则你的程序会由于没有足够的内存来满足需要而被iOS结束掉，并且会在设备上生成和保存一份低内存报告。
+
+低内存报告的格式和其它的崩溃报告不一样，它没有应用的线程回溯；其开始带有一个类似于崩溃报告的头部信息，接下来就是整个系统的内存统计字段的集合。值得关注的是一个叫Page SIze字段的值，其记录了关于每个进程在低内存报告中的使用内存分页数量方面的情况。
+
+低内存报告中最重要的部分就是进程列表（table of processes）。该表列出了在低内存报告生成时所有正在运行的进程，包括系统的守护进程。如果一个进程被“抛弃（jettisoned）”，其原因将会记录在[reason]列中。进程被“抛弃”可能由于下面的原因导致：
+
+[per‐process‐limit]：该进程跨越了系统施加的内存限制。系统为所有应用建立的常驻内存进行了限制。跨越该限制的进程将会被终止。
+注意：扩展的进程内存限制很低，某些技术，如地图视图和SpriteKit都需要较高的内存成本，不适合在扩展中使用。
+
+[vm‐pageshortage]/[vm‐thrashing]/[vm]：进程由于内存压力而被杀死。
+[vnode‐limit]:打开了太多的文件。
+注意：最前面的应用即使耗尽所有虚拟节点，系统也不会将其杀死。这意味着你的应用在后台时，即使不是过量使用虚拟节点的源也有可能会被结束。
+
+[highwater]: 一个系统守护进程跨越了它的内存使用的最大标记值。
+[jettisoned]: 其它原因导致进程被抛弃。
+如果你没有看到原因中列出你的应用/扩展的进程，那么可能不是因为内存压力引起的崩溃。查看.crash文件（上一节讲述的）了解更多信息。
+
+当你看到一个低内存崩溃时，与其关心那一部分代码在应用终止时正在执行，倒不如检查你对内存的使用方式和对低内存警告的响应处理。《在你的应用中查找内存问题》一文中详细地讲述了如何使用Instruments的Leaks分析来发现内存泄露，以及如何使用Allocations分析的Mark Heap功能来防止出现被遗弃的内存。《内存使用性能指南》论述了一种正确的方法来应对低内存通知，同时又提供了很多有效使用内存的技巧。同时也建议你看看WWDC2010年会议，使用Instruments进行高级内存分析。
+
+重点：Instruments的Leaks和Allocations分析无法跟踪所有的内存使用。你需要与Instruments的VM Tracker一起来运行你的应用（包含在Instruments的Allocations的模版中）来查看所有的内存使用量。VM Tracker默认是不开启的，要想启动VM Tracker，可以通过点击Instruments，选中“Automatic Snapshotting”选项或者手动按下“Snapshot Now”按钮。
+
+相关文档
+有关如何使用Instruments的Zombies模版来修复内存过度释放而崩溃的更多信息，请参考《通过Zombies模版来消除僵尸对象》
+
+有关应用归档的更多信息，请参考《通过XCode的Archive功能来进应用分发与测试》
+
+关于解析崩溃日志的更多信息，请参考《iPhone OS WWDC 2010会议上的了解崩溃报告》
+
+文档修改记录
+日期    备注
+2015‐07‐21    XCode6开展的崩溃报告讨论更新
+2012‐12‐13    增加更多的异常代码信息
+2012‐03‐28    XCode4更新，加入关于低内存崩溃报告和更多异常代码信息。
+2011‐03‐01    iOS4或更高版本的变化更新
+2010‐07‐06    修复文档中的Bug
+2010‐05‐18    iPhone OS3.2和XCode 3.2.2的变化更新
+2009‐06‐01    添加强调不仅需要保存.dSYM文件，还需要保存应用的二进制文件。
+2009‐04‐30    iTunes Connect崩溃日志服务更新
+2009‐02‐18    包含一个防止应用程序代码被符号化的问题解决方案更新
+2009‐01‐29    为开发人员说明如何符号化、了解和分析崩溃报告的新文档
+
+原文链接：https://developer.apple.com/library/ios/technotes/tn2151/_index.html
